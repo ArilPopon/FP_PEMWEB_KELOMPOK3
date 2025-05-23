@@ -1,0 +1,4 @@
+.navbar a:hover,
+.navbar a.active {
+  font-weight: 500;
+}
