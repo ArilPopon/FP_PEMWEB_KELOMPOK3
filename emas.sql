@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 23 Bulan Mei 2025 pada 15.12
+-- Waktu pembuatan: 23 Bulan Mei 2025 pada 18.00
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -202,6 +202,14 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Dumping data untuk tabel `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`, `created_at`) VALUES
+(1, 'Aril Ponco Nugroho', 'arilponconugroho@gmail.com', '$2y$10$IS0ew3rUehZgmieDeAHkTuXTtkTLaNLB2Hh9TLSakNProNZr2Ffjq', '0895619917517', 'customer', '2025-05-23 13:51:23'),
+(3, 'admin', 'admin@gmail.com', '$2y$10$mSwseMNBI4T0E4iBsRkeEeBTuZ8yy1dwJt3Pr9A0m/7oWJ.PePGFq', NULL, 'admin', '2025-05-23 14:56:56');
+
+--
 -- Indexes for dumped tables
 --
 
@@ -339,7 +347,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
