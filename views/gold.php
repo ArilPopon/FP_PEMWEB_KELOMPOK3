@@ -47,7 +47,7 @@ $products = $stmt->fetchAll();
 
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Katalog Produk</h2>
+        <h2>Jual Produk</h2>
         <form method="GET" class="d-flex">
             <input type="text" name="search" class="form-control me-2" placeholder="Cari produk..." value="<?= htmlspecialchars($search) ?>">
             <button type="submit" class="btn btn-outline-primary">Cari</button>
@@ -66,11 +66,7 @@ $products = $stmt->fetchAll();
                             <h6 class="text-primary">Rp <?= number_format($product['price'], 0, ',', '.') ?></h6>
                             <div class="d-flex justify-content-between">
                                 <a href="#" class="btn btn-outline-primary">Detail</a>
-<<<<<<< HEAD
-                                <a href="#" class="btn btn-outline-primary mt-auto">
-=======
                                 <a href="classes/add_to_cart.php?product_id=<?= $product['id'] ?>" class="btn btn-outline-primary mt-auto">
->>>>>>> master
                                     <i class="fas fa-cart-plus"></i> Masukkan Keranjang
                                 </a>
                             </div>
@@ -110,5 +106,30 @@ $products = $stmt->fetchAll();
         </nav>
     <?php endif; ?>
 </div>
+
+<?php if (isset($_SESSION['user'])): ?>
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>Jual Emas Anda</h4>
+        <form method="POST" action="classes/sell_gold.php">
+            <div class="mb-3">
+                <label for="weight" class="form-label">Berat (gram)</label>
+                <input type="number" step="0.01" name="weight" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="price_per_gram" class="form-label">Harga per gram</label>
+                <input type="number" step="0.01" name="price_per_gram" class="form-control" required>
+            </div>
+            <input type="hidden" name="type" value="sell">
+            <button type="submit" class="btn btn-primary">Kirim</button>
+        </form>
+    </div>
+</div>
+<?php else: ?>
+<p>Silakan <a href="login.php">login</a> untuk menjual emas Anda.</p>
+<?php endif; ?>
+<?php if (isset($_GET['sukses'])): ?>
+    <div class="alert alert-success">Data penjualan emas berhasil dikirim dan menunggu konfirmasi admin.</div>
+<?php endif; ?>
 
 <?php include 'template/footer.php'; ?>

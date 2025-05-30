@@ -28,7 +28,11 @@ if (session_status() == PHP_SESSION_NONE) {
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container">
+<<<<<<< HEAD
             <a class="navbar-brand" href="/">Toko Emas</a>
+=======
+            <a class="navbar-brand" href="index.php">Toko Emas</a>
+>>>>>>> master
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
