@@ -42,42 +42,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         select, input[type="text"], input[type="file"], textarea { width: 100%; padding: 8px; }
         button { margin-top: 15px; padding: 10px 15px; }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
-<h2>Customisasi Perhiasan</h2>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+    <div class="card p-4 shadow w-100" style="max-width: 500px;">
+        
+        <form id="customForm" action="" method="POST" enctype="multipart/form-data">
+            <label>Jenis Perhiasan:</label>
+            <?php
+                // Get data
+                $query = "SELECT * FROM categories";
+                $stmt = $pdo->prepare($query);
+                $stmt->execute();
+                // call data
+                echo '<select name="jenis" required>';
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['name']) . "</option>";
+                }
+                echo '</select>';
+            ?>
 
-<form id="customForm" action="" method="POST" enctype="multipart/form-data">
-    <label>Jenis Perhiasan:</label>
-    <select name="jenis" required>
-        <option value="cincin">Cincin</option>
-        <option value="kalung">Kalung</option>
-        <option value="gelang">Gelang</option>
-    </select>
+            <label>Bahan:</label>
+            <select name="bahan" required>
+                <option value="emas_kuning">Emas Kuning</option>
+                <option value="emas_putih">Emas Putih</option>
+            </select>
 
-    <label>Bahan:</label>
-    <select name="bahan" required>
-        <option value="emas_kuning">Emas Kuning</option>
-        <option value="emas_putih">Emas Putih</option>
-    </select>
+            <label>Kadar Emas:</label>
+            <?php
+                // get data
+                $query = 'SELECT * FROM gold';
+                $stmt = $pdo->prepare($query);
+                $stmt->execute();
+                $kadar = $stmt->fetchAll();
+                // call data
+                echo '<select name="kadar" required>';
+                if ($kadar) {
+                    foreach($kadar as $kadar) {
+                        echo '<option value="' . htmlspecialchars($kadar['id']) . '">' . htmlspecialchars($kadar['type']) . '</option>';
+                    }
+                
+                }
+                echo '</select>'; 
+            ?>
 
-    <label>Kadar Emas:</label>
-    <select name="kadar" required>
-        <option value="18K">18K</option>
-        <option value="22K">22K</option>
-    </select>
+            <label>Ukuran:</label>
+            <input type="text" name="ukuran" required>
 
-    <label>Ukuran:</label>
-    <input type="text" name="ukuran" required>
+            <label>Tulisan Ukiran (Opsional):</label>
+            <textarea name="ukiran"></textarea>
 
-    <label>Tulisan Ukiran (Opsional):</label>
-    <textarea name="ukiran"></textarea>
+            <label>Upload Gambar Referensi:</label>
+            <input type="file" name="gambar" accept="image/*" required>
 
-    <label>Upload Gambar Referensi:</label>
-    <input type="file" name="gambar" accept="image/*" required>
-
-    <button type="submit">Kirim Customisasi</button>
-</form>
+            <button type="submit">Kirim Customisasi</button>
+        </form>
+    </div>
+</div>
 
 </body>
 </html>
