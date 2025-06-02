@@ -6,7 +6,7 @@ if (!isset($_SESSION['user'])) {
     die("Anda harus login terlebih dahulu.");
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'] ?? 1;
 $appointment_date = $_POST['appointment_date'];
 $appointment_time = $_POST['appointment_time'];
 $note = $_POST['note'];
