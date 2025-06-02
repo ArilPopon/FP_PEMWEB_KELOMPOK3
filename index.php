@@ -10,7 +10,6 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- HERO BANNER -->
 <section class="text-white text-center d-flex align-items-center" style="
-<<<<<<< HEAD
     background: url('assets/images/banner.jpg') no-repeat center center;
     background-size: cover;
     height: 500px;
@@ -18,18 +17,6 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="container">
         <h1 class="display-4 fw-bold">Temukan Keindahan & Investasi Emas di Satu Tempat</h1>
         <p class="lead">Perhiasan elegan, layanan custom eksklusif, dan jual beli emas terpercaya.</p>
-=======
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-    url('assets/images/banner2.jpg') no-repeat center center;
-    background-size: cover;
-    height: 500px;
-"
->
-    <div class="container">
-        <h1 class="display-4 fw-bold">Temukan Keindahan & Investasi Emas di Satu Tempat</h1>
-        <p class="lead">Perhiasan elegan, layanan custom eksklusif, dan jual beli emas terpercaya.</p>
-        <p class="lead">Toko Emas Erison Siregar.</p>
->>>>>>> master
         <a href="catalog.php" class="btn btn-lg btn-primary me-2">Lihat Katalog</a>
         <a href="gold.php" class="btn btn-lg btn-outline-light">Jual Beli Emas</a>
     </div>
