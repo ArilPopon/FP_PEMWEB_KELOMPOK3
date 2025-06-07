@@ -44,7 +44,7 @@ if ($statusColumn && isset($statusColumn['Type'])) {
 }
 
 // Query untuk mengabil data transaksi berdasarkan status
-$query = "SELECT * FROM transactions WHERE status = :status";
+$query = "SELECT * FROM transactions WHERE status = :status ORDER BY created_at DESC";
 $params = [':status' => $status];
 
 $stmt = $pdo->prepare($query);
@@ -60,7 +60,8 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <select name="status" id="status-select" class="form-select w-auto" onchange="this.form.submit()">
             <?php 
                 foreach ($enumValues as $enumValue) {
-                    echo '<option value="' . htmlspecialchars($enumValue) . '">' . htmlspecialchars($enumValue) . '</option>';
+                    $selected = ($enumValue === $status) ? 'selected' : '';
+                    echo '<option value="' . htmlspecialchars($enumValue) . '" ' . $selected . '>' . htmlspecialchars($enumValue) . '</option>';
                 }
             ?>
         </select>
