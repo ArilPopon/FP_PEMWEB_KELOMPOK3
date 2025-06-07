@@ -122,7 +122,3 @@ if (!empty($keyword)) {
         <p class="text-muted">Data kosong / Data tidak ditemukan!</p>
     <?php endif; ?>
 </div>
-
-<?php
-// include 'includes/footer.php'; // Assuming you have a footer to include
-?>
