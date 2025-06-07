@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>Upload Gambar Referensi:</label>
             <input type="file" name="gambar" accept="image/*" required>
 
-            <button type="submit">Kirim Customisasi</button>
+            <button type="submit" class="btn btn-primary ml-2">Kirim Customisasi</button>
         </form>
     </div>
 </div>
