@@ -16,7 +16,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 <div class="container mt-5">
   <h2>Daftar Temu Janji</h2>
   <table class="table table-bordered">
-    <thead>
+    <thead class="table-dark">
       <tr>
         <th>Tanggal</th>
         <th>Waktu</th>

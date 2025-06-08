@@ -44,7 +44,7 @@ $orders = $customOrder->getAll($keyword);
         </div>
     </div>
 
-    <form class="input-group mb-4" method="get" action="custom_admin.php">
+    <form class="input-group mb-4" method="get" action="custom.php">
         <input type="text" name="search" class="form-control" placeholder="Cari deskripsi atau status..." value="<?= htmlspecialchars($keyword) ?>">
         <button class="btn btn-outline-secondary" type="submit">Cari</button>
     </form>
@@ -101,7 +101,7 @@ $orders = $customOrder->getAll($keyword);
                             </td>
                             <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
                             <td>
-                                <a href="custom_admin.php?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus custom order ini?')">Hapus</a>
+                                <a href="custom.php?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus custom order ini?')">Hapus</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
