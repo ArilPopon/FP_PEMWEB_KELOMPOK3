@@ -1,14 +1,17 @@
 <?php
-class Cart {
+class Cart
+{
     private $pdo;
     private $userId;
 
-    public function __construct($pdo, $userId) {
+    public function __construct($pdo, $userId)
+    {
         $this->pdo = $pdo;
         $this->userId = $userId;
     }
 
-    public function addProduct($productId, $quantity = 1) {
+    public function addProduct($productId, $quantity = 1)
+    {
         // Cek apakah produk sudah ada di keranjang
         $stmt = $this->pdo->prepare("SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?");
         $stmt->execute([$this->userId, $productId]);
@@ -25,7 +28,8 @@ class Cart {
         }
     }
 
-    public function getItems() {
+    public function getItems()
+    {
         $stmt = $this->pdo->prepare("SELECT cart_items.*, products.name, products.price, products.image 
                                      FROM cart_items 
                                      JOIN products ON cart_items.product_id = products.id 
@@ -34,9 +38,15 @@ class Cart {
         return $stmt->fetchAll();
     }
 
-    public function removeItem($productId) {
-    $stmt = $this->pdo->prepare("DELETE FROM cart_items WHERE user_id = ? AND product_id = ?");
-    $stmt->execute([$this->userId, $productId]);
+    public function removeItem($productId)
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM cart_items WHERE user_id = ? AND product_id = ?");
+        $stmt->execute([$this->userId, $productId]);
     }
 
+    public function clearCart()
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
+        return $stmt->execute([$this->userId]);
+    }
 }

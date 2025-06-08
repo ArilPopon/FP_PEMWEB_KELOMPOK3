@@ -1,12 +1,15 @@
 <?php
-class CustomerOrder {
+class CustomerOrder
+{
     private $pdo;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function create($user_id, $description, $image) {
+    public function create($user_id, $description, $image)
+    {
         $sql = "INSERT INTO custom_orders (user_id, description, reference_image) VALUES (:user_id, :description, :image)";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
@@ -16,7 +19,8 @@ class CustomerOrder {
         ]);
     }
 
-    public function getAll($keyword = '') {
+    public function getAll($keyword = '')
+    {
         $sql = "SELECT * FROM custom_orders";
         $params = [];
 
@@ -31,7 +35,8 @@ class CustomerOrder {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateStatus($id, $status) {
+    public function updateStatus($id, $status)
+    {
         $sql = "UPDATE custom_orders SET status = :status WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
@@ -40,10 +45,15 @@ class CustomerOrder {
         ]);
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $stmt = $this->pdo->prepare("DELETE FROM custom_orders WHERE id = ?");
         return $stmt->execute([$id]);
     }
-}
-?>
 
+    public function updatePrice($id, $price)
+    {
+        $stmt = $this->pdo->prepare("UPDATE custom_orders SET estimated_price = ? WHERE id = ?");
+        return $stmt->execute([$price, $id]);
+    }
+}

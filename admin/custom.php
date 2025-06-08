@@ -10,7 +10,7 @@ $customOrder = new CustomerOrder($pdo);
 // Tangani penghapusan
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $customOrder->delete($_GET['delete']);
-    header("Location: custom_admin.php");
+    header("Location: custom.php");
     exit;
 }
 
@@ -18,6 +18,18 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['status'])) {
     $customOrder->updateStatus($_POST['id'], $_POST['status']);
 }
+
+// tangani pembaruan harga
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Update harga
+    if (isset($_POST['id'], $_POST['harga']) && isset($_POST['update_harga'])) {
+        $customOrder->updatePrice($_POST['id'], $_POST['harga']);
+        header("Location: custom.php");
+        exit;
+    }
+}
+
+
 
 // Tangani pencarian
 $keyword = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -61,7 +73,7 @@ $orders = $customOrder->getAll($keyword);
                             <td><?= nl2br(htmlspecialchars($row['description'])) ?></td>
                             <td>
                                 <?php if (!empty($row['reference_image'])): ?>
-                                    <img src="../../uploads/<?= htmlspecialchars($row['reference_image']) ?>" alt="gambar" style="width: 60px; height: 60px; object-fit:cover;">
+                                    <img src="../uploads/<?= htmlspecialchars($row['reference_image']) ?>" alt="gambar" style="width: 60px; height: 60px; object-fit:cover;">
                                 <?php else: ?>
                                     Tidak ada
                                 <?php endif; ?>
@@ -80,7 +92,13 @@ $orders = $customOrder->getAll($keyword);
                                     </select>
                                 </form>
                             </td>
-                            <td><?= $row['estimated_price'] ? 'Rp ' . number_format($row['estimated_price'], 0, ',', '.') : '-' ?></td>
+                            <td>
+                                <form method="POST" class="d-flex" style="gap: 4px;">
+                                    <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                    <input type="text" name="harga" value="<?= $row['estimated_price'] ?>" class="form-control form-control-sm" placeholder="Harga" min="0">
+                                    <button type="submit" name="update_harga" class="btn btn-sm btn-success">Simpan</button>
+                                </form>
+                            </td>
                             <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
                             <td>
                                 <a href="custom_admin.php?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus custom order ini?')">Hapus</a>
@@ -96,4 +114,5 @@ $orders = $customOrder->getAll($keyword);
 </div>
 
 </body>
+
 </html>

@@ -10,7 +10,8 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- HERO BANNER -->
 <section class="text-white text-center d-flex align-items-center" style="
-    background: url('assets/images/banner.jpg') no-repeat center center;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                url('assets/images/banner2.jpg') no-repeat center center;
     background-size: cover;
     height: 500px;
 ">
