@@ -16,7 +16,7 @@ $transactions = $stmt->fetchAll();
 <div class="container py-5">
     <h2 class="mb-4">Transaksi Penjualan Emas</h2>
     <table class="table table-bordered table-striped">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>Nama User</th>
                 <th>Berat (gram)</th>
