@@ -49,7 +49,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="container text-center">
         <h2 class="mb-4">Custom Perhiasan Eksklusif</h2>
         <p class="mb-4 fs-5">Buat perhiasan sesuai gaya dan cerita pribadi Anda. Kami bantu wujudkan keinginan Anda dengan sentuhan ahli.</p>
-        <a href="/custom.php" class="btn btn-light btn-lg">Konsultasi Custom</a>
+        <a href="custom.php" class="btn btn-light btn-lg">Konsultasi Custom</a>
     </div>
 </section>
 
@@ -58,7 +58,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="container text-center">
         <h2 class="mb-4">Jual Beli Emas</h2>
         <p class="mb-4 fs-5">Nikmati kemudahan jual beli emas batangan atau perhiasan dengan harga terkini dan transparan.</p>
-        <a href="/gold.php" class="btn btn-primary btn-lg">Transaksi Sekarang</a>
+        <a href="gold.php" class="btn btn-primary btn-lg">Transaksi Sekarang</a>
     </div>
 </section>
 
@@ -67,7 +67,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="container text-center">
         <h2 class="mb-4">Buat Janji Temu</h2>
         <p class="mb-3 fs-5">Ingin konsultasi langsung atau melihat koleksi kami? Silakan buat janji temu secara online!</p>
-        <a href="/booking.php" class="btn btn-outline-primary btn-lg">Buat Janji Sekarang</a>
+        <a href="booking.php" class="btn btn-outline-primary btn-lg">Buat Janji Sekarang</a>
     </div>
 </section>
 
