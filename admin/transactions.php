@@ -13,8 +13,8 @@ if (isset($_GET['status']) && in_array($_GET['status'], $validStatuses)) {
 }
 
 // Query untuk mengabil filter status transaksi
-$status_query = "SHOW COLUMNS FROM transactions";
-$statusStmt = $pdo->prepare($status_query);
+$statusQuery = "SHOW COLUMNS FROM transactions";
+$statusStmt = $pdo->prepare($statusQuery);
 $statusStmt->execute();
 $column = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -44,7 +44,7 @@ if ($statusColumn && isset($statusColumn['Type'])) {
 }
 
 // Query untuk mengabil data transaksi berdasarkan status
-$query = "SELECT * FROM transactions WHERE status = :status";
+$query = "SELECT * FROM transactions WHERE status = :status ORDER BY created_at DESC";
 $params = [':status' => $status];
 
 $stmt = $pdo->prepare($query);
@@ -60,7 +60,8 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <select name="status" id="status-select" class="form-select w-auto" onchange="this.form.submit()">
             <?php 
                 foreach ($enumValues as $enumValue) {
-                    echo '<option value="' . htmlspecialchars($enumValue) . '">' . htmlspecialchars($enumValue) . '</option>';
+                    $selected = ($enumValue === $status) ? 'selected' : '';
+                    echo '<option value="' . htmlspecialchars($enumValue) . '" ' . $selected . '>' . htmlspecialchars($enumValue) . '</option>';
                 }
             ?>
         </select>
@@ -77,7 +78,7 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>Quantity</th>
                     <th>Total Price</th>
                     <th>Status</th>
-                    
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -90,6 +91,9 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= htmlspecialchars($transactions['quantity']); ?></td>
                     <td><?= htmlspecialchars($transactions['total_price']); ?></td>
                     <td><?= htmlspecialchars($transactions['status']); ?></td>
+                    <td>
+                        <a href="transactions_edit.php?id=<?= $transactions['id']; ?>"><i class="fa-solid fa-pen-to-square"></i></a>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
