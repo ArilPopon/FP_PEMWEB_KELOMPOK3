@@ -495,6 +495,21 @@ ALTER TABLE `transactions`
   ADD CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 COMMIT;
 
+--
+-- Penambahan value gambar untuk table `gold_transaction`
+--
+
+ALTER TABLE `gold_transactions` 
+  ADD COLUMN `photo` VARCHAR(255);
+
+--
+-- Penambahan value transaksi untuk tabel 'transaction'
+--
+
+ALTER TABLE `transactions` ADD COLUMN `gold_transaction_id` INT DEFAULT NULL;
+
+
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
