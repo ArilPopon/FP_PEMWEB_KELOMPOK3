@@ -1,13 +1,19 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../classes/CustomerOrder.php';
-include __DIR__ . '/template/header.php';
+require_once "config/database.php";
+require_once "classes/CustomerOrder.php";
+include "template/header.php";
 
+// Pastikan user sudah login
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user']['id']; // Ambil user_id dari session login
 $customOrder = new CustomerOrder($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id     = $_SESSION['user_id'] ?? 1;
     $jenis       = $_POST['jenis'] ?? '';
     $bahan       = $_POST['bahan'] ?? '';
     $kadar       = $_POST['kadar'] ?? '';
@@ -53,11 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form id="customForm" action="" method="POST" enctype="multipart/form-data">
             <label>Jenis Perhiasan:</label>
             <?php
-                // Get data
                 $query = "SELECT * FROM categories";
                 $stmt = $pdo->prepare($query);
                 $stmt->execute();
-                // call data
                 echo '<select name="jenis" required>';
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['name']) . "</option>";
@@ -73,18 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <label>Kadar Emas:</label>
             <?php
-                // get data
                 $query = 'SELECT * FROM gold';
                 $stmt = $pdo->prepare($query);
                 $stmt->execute();
                 $kadar = $stmt->fetchAll();
-                // call data
                 echo '<select name="kadar" required>';
-                if ($kadar) {
-                    foreach($kadar as $kadar) {
-                        echo '<option value="' . htmlspecialchars($kadar['id']) . '">' . htmlspecialchars($kadar['type']) . '</option>';
-                    }
-                
+                foreach ($kadar as $item) {
+                    echo '<option value="' . htmlspecialchars($item['id']) . '">' . htmlspecialchars($item['type']) . '</option>';
                 }
                 echo '</select>'; 
             ?>
