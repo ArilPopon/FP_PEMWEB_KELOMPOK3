@@ -65,7 +65,7 @@ $products = $stmt->fetchAll();
                             <p class="text-muted mb-1"><?= htmlspecialchars($product['category_name']) ?></p>
                             <h6 class="text-primary">Rp <?= number_format($product['price'], 0, ',', '.') ?></h6>
                             <div class="d-flex justify-content-between">
-                                <a href="#" class="btn btn-outline-primary">Detail</a>
+                                <a href="detail.php?id=<?= $product['id'] ?>" class="btn btn-outline-primary">Detail</a>
                                 <a href="classes/add_to_cart.php?product_id=<?= $product['id'] ?>" class="btn btn-outline-primary mt-auto">
                                     <i class="fas fa-cart-plus"></i> Masukkan Keranjang
                                 </a>

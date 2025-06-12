@@ -2,7 +2,7 @@
 require_once './config/database.php';
 include 'template/header.php';
 
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search = $_GET['search'] ?? '';
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int) $_GET['page'] : 1;
 $limit = 8;
 $offset = ($page - 1) * $limit;
@@ -21,7 +21,7 @@ $count_stmt->execute($count_params);
 $total_products = $count_stmt->fetchColumn();
 $total_pages = ceil($total_products / $limit);
 
-// Ambil data produk dengan LIMIT dan OFFSET
+// Ambil produk dengan LIMIT & OFFSET
 $sql = "SELECT products.*, categories.name AS category_name 
         FROM products 
         JOIN categories ON products.category_id = categories.id";
@@ -65,7 +65,7 @@ $products = $stmt->fetchAll();
                             <p class="text-muted mb-1"><?= htmlspecialchars($product['category_name']) ?></p>
                             <h6 class="text-primary">Rp <?= number_format($product['price'], 0, ',', '.') ?></h6>
                             <div class="d-flex justify-content-between">
-                                <a href="#" class="btn btn-outline-primary">Detail</a>
+                                <a href="detail.php?id=<?= $product['id'] ?>" class="btn btn-outline-primary">Detail</a>
                                 <a href="classes/add_to_cart.php?product_id=<?= $product['id'] ?>" class="btn btn-outline-primary mt-auto">
                                     <i class="fas fa-cart-plus"></i> Masukkan Keranjang
                                 </a>
@@ -81,7 +81,6 @@ $products = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 
-    <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
         <nav>
             <ul class="pagination justify-content-center">
@@ -107,29 +106,36 @@ $products = $stmt->fetchAll();
     <?php endif; ?>
 </div>
 
-<?php if (isset($_SESSION['user'])): ?>
-<div class="card mb-4">
-    <div class="card-body">
-        <h4>Jual Emas Anda</h4>
-        <form method="POST" action="classes/sell_gold.php">
-            <div class="mb-3">
-                <label for="weight" class="form-label">Berat (gram)</label>
-                <input type="number" step="0.01" name="weight" class="form-control" required>
+<div class="container mb-5">
+    <?php if (isset($_SESSION['user'])): ?>
+        <div class="card">
+            <div class="card-body">
+                <h4>Jual Emas Anda</h4>
+                <form method="POST" action="classes/sell_gold.php" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="weight" class="form-label">Berat (gram)</label>
+                        <input type="number" step="0.01" name="weight" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price_per_gram" class="form-label">Harga per gram</label>
+                        <input type="number" step="0.01" name="price_per_gram" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">Upload Foto Emas</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*" required>
+                    </div>
+                    <input type="hidden" name="type" value="sell">
+                    <button type="submit" class="btn btn-primary">Kirim Penjualan</button>
+                </form>
             </div>
-            <div class="mb-3">
-                <label for="price_per_gram" class="form-label">Harga per gram</label>
-                <input type="number" step="0.01" name="price_per_gram" class="form-control" required>
-            </div>
-            <input type="hidden" name="type" value="sell">
-            <button type="submit" class="btn btn-primary">Kirim</button>
-        </form>
-    </div>
+        </div>
+    <?php else: ?>
+        <p>Silakan <a href="login.php">login</a> untuk menjual emas Anda.</p>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['sukses'])): ?>
+        <div class="alert alert-success mt-3">Penjualan emas berhasil dikirim dan menunggu konfirmasi admin.</div>
+    <?php endif; ?>
 </div>
-<?php else: ?>
-<p>Silakan <a href="login.php">login</a> untuk menjual emas Anda.</p>
-<?php endif; ?>
-<?php if (isset($_GET['sukses'])): ?>
-    <div class="alert alert-success">Data penjualan emas berhasil dikirim dan menunggu konfirmasi admin.</div>
-<?php endif; ?>
 
 <?php include 'template/footer.php'; ?>
