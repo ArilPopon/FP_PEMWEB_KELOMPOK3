@@ -17,7 +17,6 @@ if (isset($_POST['checkout_submit']) && isset($_FILES['bukti'])) {
     $userId = $_SESSION['user']['id'];
     $totalPrice = 0;
 
-    // Hitung total harga
     foreach ($items as $item) {
         $totalPrice += $item['price'] * $item['quantity'];
     }
@@ -28,16 +27,16 @@ if (isset($_POST['checkout_submit']) && isset($_FILES['bukti'])) {
     $targetFile = $targetDir . basename($proofName);
     move_uploaded_file($_FILES['bukti']['tmp_name'], $targetFile);
 
-    // Simpan ke orders
-    $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_price, status, proof, created_at) VALUES (?, ?, 'pending', ?, NOW())");
+    // Simpan ke transactions
+    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, total_price, status, proof, created_at) VALUES (?, ?, 'pending', ?, NOW())");
     $stmt->execute([$userId, $totalPrice, $proofName]);
-    $orderId = $pdo->lastInsertId();
+    $transactionId = $pdo->lastInsertId();
 
     // Simpan ke order_items
     $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
     foreach ($items as $item) {
         $stmtItem->execute([
-            $orderId,
+            $transactionId,
             $item['product_id'],
             $item['quantity'],
             $item['price']
@@ -51,6 +50,7 @@ if (isset($_POST['checkout_submit']) && isset($_FILES['bukti'])) {
     exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html>

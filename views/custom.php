@@ -4,6 +4,12 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/CustomerOrder.php';
 include __DIR__ . '/template/header.php';
 
+// Pastikan user sudah login
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit;
+}
+
 $customOrder = new CustomerOrder($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -33,26 +39,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Customisasi Perhiasan</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        form { max-width: 500px; margin: auto; }
-        label { display: block; margin-top: 10px; }
-        select, input[type="text"], input[type="file"], textarea { width: 100%; padding: 8px; }
-        button { margin-top: 15px; padding: 10px 15px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        form {
+            max-width: 500px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        select,
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+        }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-    <div class="card p-4 shadow w-100" style="max-width: 500px;">
-        
-        <form id="customForm" action="" method="POST" enctype="multipart/form-data">
-            <label>Jenis Perhiasan:</label>
-            <?php
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+        <div class="card p-4 shadow w-100" style="max-width: 500px;">
+
+            <form id="customForm" action="" method="POST" enctype="multipart/form-data">
+                <label>Jenis Perhiasan:</label>
+                <?php
                 // Get data
                 $query = "SELECT * FROM categories";
                 $stmt = $pdo->prepare($query);
@@ -63,16 +93,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['name']) . "</option>";
                 }
                 echo '</select>';
-            ?>
+                ?>
 
-            <label>Bahan:</label>
-            <select name="bahan" required>
-                <option value="emas_kuning">Emas Kuning</option>
-                <option value="emas_putih">Emas Putih</option>
-            </select>
+                <label>Bahan:</label>
+                <select name="bahan" required>
+                    <option value="emas_kuning">Emas Kuning</option>
+                    <option value="emas_putih">Emas Putih</option>
+                </select>
 
-            <label>Kadar Emas:</label>
-            <?php
+                <label>Kadar Emas:</label>
+                <?php
                 // get data
                 $query = 'SELECT * FROM gold';
                 $stmt = $pdo->prepare($query);
@@ -81,29 +111,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // call data
                 echo '<select name="kadar" required>';
                 if ($kadar) {
-                    foreach($kadar as $kadar) {
+                    foreach ($kadar as $kadar) {
                         echo '<option value="' . htmlspecialchars($kadar['id']) . '">' . htmlspecialchars($kadar['type']) . '</option>';
                     }
-                
                 }
-                echo '</select>'; 
-            ?>
+                echo '</select>';
+                ?>
 
-            <label>Ukuran:</label>
-            <input type="text" name="ukuran" required>
+                <label>Ukuran:</label>
+                <input type="text" name="ukuran" required>
 
-            <label>Tulisan Ukiran (Opsional):</label>
-            <textarea name="ukiran"></textarea>
+                <label>Tulisan Ukiran (Opsional):</label>
+                <textarea name="ukiran"></textarea>
 
-            <label>Upload Gambar Referensi:</label>
-            <input type="file" name="gambar" accept="image/*" required>
+                <label>Upload Gambar Referensi:</label>
+                <input type="file" name="gambar" accept="image/*" required>
 
-            <button type="submit" class="btn btn-primary ml-2">Kirim Customisasi</button>
-        </form>
+                <button type="submit" class="btn btn-primary ml-2">Kirim Customisasi</button>
+            </form>
+        </div>
     </div>
-</div>
 
 </body>
+
 </html>
 
 <?php include 'views/template/footer.php'; ?>

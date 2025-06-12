@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
     $password = $_POST['password'];
     $confirm = $_POST['confirm'];
 
@@ -19,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Email sudah terdaftar.';
         } else {
             $hash = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)");
-            if ($stmt->execute([$name, $email, $hash, $phone])) {
+            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, phone, address) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt->execute([$name, $email, $hash, $phone, $address])) {
                 header("Location: login.php");
                 exit;
             } else {
@@ -50,6 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mb-3">
                 <label class="form-label">No. Telepon</label>
                 <input type="text" name="phone" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Alamat</label>
+                <textarea name="address" class="form-control" rows="3" required></textarea>
             </div>
             <div class="mb-3">
                 <label class="form-label">Password</label>

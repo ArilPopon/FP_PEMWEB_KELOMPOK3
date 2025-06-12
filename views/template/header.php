@@ -55,7 +55,10 @@ if (session_status() == PHP_SESSION_NONE) {
 
                     <?php if (isset($_SESSION['user'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link <?= (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : '' ?>" href="dashboard.php">Dashboard</a>
+                        <li class="nav-item">
+                            <a class="nav-link <?= in_array(basename($_SERVER['PHP_SELF']), ['dashboard.php', 'riwayat.php', 'pengiriman.php', 'profil.php', 'detail_transaksi.php']) ? 'active' : '' ?>" href="dashboard.php">Dashboard</a>
+                        </li>
+
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-danger" href="logout.php" onclick="confirmLogout(event)">Logout</a>

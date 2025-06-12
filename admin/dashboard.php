@@ -4,7 +4,8 @@ include 'includes/header.php';
 include 'includes/sidebar.php';
 require_once './../config/database.php';
 
-function total_products($pdo) {
+function total_products($pdo)
+{
     $query = "SELECT COUNT(*) FROM products";
 
     $stmt = $pdo->prepare($query);
@@ -13,16 +14,18 @@ function total_products($pdo) {
     return $total_products;
 };
 
-function pengguna($pdo) {
+function pengguna($pdo)
+{
     $query = 'SELECT COUNT(*) FROM users WHERE role LIKE "customer"';
-    
+
     $stmt = $pdo->prepare($query);
     $stmt->execute();
     $pengguna = $stmt->fetchColumn();
     return $pengguna;
 };
 
-function custom($pdo) {
+function custom($pdo)
+{
     $query = "SELECT COUNT(*) FROM custom_orders";
 
     $stmt = $pdo->prepare($query);
@@ -31,40 +34,54 @@ function custom($pdo) {
     return $custom;
 };
 
-function paid_transactions($pdo) {
+function paid_transactions($pdo)
+{
     $query = "SELECT COUNT(*) FROM transactions WHERE status = 'paid'";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute();
     $paid_transactions = $stmt->fetchColumn();
-    return $paid_transactions; 
+    return $paid_transactions;
 };
 
-function transactions_in_proses($pdo) {
-    $query = "SELECT COUNT(*) FROM transactions WHERE status = 'pending' OR status = 'shipped'";
+function transactions_in_proses($pdo)
+{
+    $query = "SELECT COUNT(*) FROM transactions WHERE status != 'completed'";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute();
     $transactions_in_proses = $stmt->fetchColumn();
-    return $transactions_in_proses; 
+    return $transactions_in_proses;
 };
 
-function failed_transactions($pdo) {
+function failed_transactions($pdo)
+{
     $query = "SELECT COUNT(*) FROM transactions WHERE status = 'cancelled'";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute();
     $failed_transactions = $stmt->fetchColumn();
-    return $failed_transactions; 
+    return $failed_transactions;
 };
 
-function appointments($pdo) {
-    $query = "SELECT COUNT(*) FROM appointments WHERE status ='pending'";
+function completed_transactions($pdo)
+{
+    $query = "SELECT COUNT(*) FROM transactions WHERE status = 'completed'";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute();
+    $failed_transactions = $stmt->fetchColumn();
+    return $failed_transactions;
+};
+
+function appointments($pdo)
+{
+    $query = "SELECT COUNT(*) FROM appointments "; //WHERE status ='pending'
 
     $stmt = $pdo->prepare($query);
     $stmt->execute();
     $appointmens = $stmt->fetchColumn();
-    return $appointmens; 
+    return $appointmens;
 };
 
 ?>
@@ -110,23 +127,19 @@ function appointments($pdo) {
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">Transaksi Lunas</h5>
-                    <p class="card-text fs-4"><?php echo paid_transactions($pdo); ?></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row my-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Transaksi Tertunda / Transaksi Dalam Proses</h5>
+                    <h5 class="card-title">Transaksi Dalam Proses</h5>
                     <p class="card-text fs-4"><?php echo transactions_in_proses($pdo); ?></p>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row my-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Transaksi Selesai</h5>
+                    <p class="card-text fs-4"><?php echo completed_transactions($pdo); ?></p>
+                </div>
+            </div>
+        </div>
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">

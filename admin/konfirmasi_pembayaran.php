@@ -9,19 +9,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['a
     $orderId = $_POST['order_id'];
     $action = $_POST['action'];
 
-    $newStatus = ($action === 'accept') ? 'paid' : 'cancelled';
-
-    $stmt = $pdo->prepare("UPDATE orders SET status = :status WHERE id = :id");
-    $stmt->execute([
-        ':status' => $newStatus,
-        ':id' => $orderId
-    ]);
-
-    $message = "Pesanan #$orderId berhasil diperbarui menjadi '$newStatus'.";
+    if ($action === 'accept') {
+        // Jika diterima, ubah status menjadi paid dan set paid_at
+        $stmt = $pdo->prepare("UPDATE transactions SET status = 'paid', paid_at = NOW() WHERE id = :id");
+        $stmt->execute([':id' => $orderId]);
+        $message = "Transaksi #$orderId berhasil diperbarui menjadi 'paid'.";
+    } else {
+        // Jika ditolak, ubah status menjadi cancelled dan set paid_at (opsional)
+        $stmt = $pdo->prepare("UPDATE transactions SET status = 'cancelled', paid_at = NOW() WHERE id = :id");
+        $stmt->execute([':id' => $orderId]);
+        $message = "Transaksi #$orderId berhasil diperbarui menjadi 'cancelled'.";
+    }
 }
 
-// Ambil semua pesanan yang statusnya pending
-$stmt = $pdo->prepare("SELECT * FROM orders WHERE status = 'pending' ORDER BY created_at DESC");
+// Ambil semua transaksi dengan status pending
+$stmt = $pdo->prepare("SELECT * FROM transactions WHERE status = 'pending' ORDER BY created_at DESC");
 $stmt->execute();
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -38,10 +40,10 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
+                        <th>Transaksi ID</th>
                         <th>User ID</th>
                         <th>Total Harga</th>
-                        <th>Tanggal</th>
+                        <th>Waktu</th>
                         <th>Bukti Transfer</th>
                         <th>Aksi</th>
                     </tr>
@@ -73,6 +75,6 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </table>
         </div>
     <?php else: ?>
-        <p class="text-center text-muted" style="font-size: 18px;">Tidak ada pesanan yang perlu dikonfirmasi.</p>
+        <p class="text-center text-muted" style="font-size: 18px;">Tidak ada transaksi yang perlu dikonfirmasi.</p>
     <?php endif; ?>
 </div>

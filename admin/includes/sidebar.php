@@ -17,5 +17,6 @@
     <a href="users.php" class="<?= basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : '' ?>"><i class="fas fa-users me-2"></i> Manajemen Pengguna</a>
     <a href="transactions.php" class="<?= basename($_SERVER['PHP_SELF']) == 'transactions.php' ? 'active' : '' ?>"><i class="fas fa-exchange-alt me-2"></i> Transaksi</a>
     <a href="konfirmasi_pembayaran.php" class="<?= basename($_SERVER['PHP_SELF']) == 'konfirmasi_pembayaran.php' ? 'active' : '' ?>"><i class="fa-solid fa-file-circle-check me-2"></i> Konfirmasi Pembayaran</a>
+    <a href="pengiriman.php" class="<?= basename($_SERVER['PHP_SELF']) == 'pengiriman.php' ? 'active' : '' ?>"><i class="fa-solid fa-truck me-2"></i> Pengiriman</a>
     <a href="logout.php" onclick="confirmLogout(event)"> <i class=" fas fa-sign-out-alt me-2"></i> Keluar</a>
 </div>
