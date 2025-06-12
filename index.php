@@ -35,7 +35,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
                             <p class="card-text text-muted">Rp <?= number_format($product['price'], 0, ',', '.') ?></p>
-                            <a href="#" class="btn btn-sm btn-outline-primary">Detail</a>
+                            <a href="detail.php?id=<?= $product['id'] ?>" class="btn btn-sm btn-outline-primary">Detail</a>
                         </div>
                     </div>
                 </div>

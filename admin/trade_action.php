@@ -26,8 +26,8 @@ if ($action === 'delete') {
         $update = $pdo->prepare("UPDATE gold_transactions SET status = 'completed' WHERE id = ?");
         $update->execute([$id]);
 
-        // Masukkan ke tabel orders (untuk konfirmasi_pembayaran)
-        $insert = $pdo->prepare("INSERT INTO orders (user_id, total_price, status, created_at)
+        // Masukkan ke tabel transaksi umum (transactions)
+        $insert = $pdo->prepare("INSERT INTO transactions (user_id, total_price, status, created_at)
                                  VALUES (:user_id, :total_price, 'pending', NOW())");
         $insert->execute([
             ':user_id' => $gold['user_id'],

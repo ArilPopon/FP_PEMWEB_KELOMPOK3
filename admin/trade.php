@@ -55,7 +55,6 @@ $transactions = $stmt->fetchAll();
                 <th>Harga per gram</th>
                 <th>Total</th>
                 <th>Status</th>
-                <th>Bukti Gambar</th>
                 <th>Waktu</th>
                 <th>Aksi</th>
             </tr>
@@ -68,13 +67,6 @@ $transactions = $stmt->fetchAll();
                 <td>Rp <?= number_format($trx['price_per_gram'], 0, ',', '.') ?></td>
                 <td>Rp <?= number_format($trx['total_price'], 0, ',', '.') ?></td>
                 <td><?= ucfirst($trx['status']) ?></td>
-                <td>
-                    <?php if (!empty($trx['image'])): ?>
-                        <a href="../uploads/<?= htmlspecialchars($trx['image']) ?>" target="_blank">Lihat</a>
-                    <?php else: ?>
-                        -
-                    <?php endif; ?>
-                </td>
                 <td><?= $trx['created_at'] ?></td>
                 <td>
                     <?php if ($trx['status'] === 'pending'): ?>

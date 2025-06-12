@@ -111,19 +111,15 @@ $products = $stmt->fetchAll();
         <div class="card">
             <div class="card-body">
                 <h4>Jual Emas Anda</h4>
-                <form method="POST" action="classes/sell_gold.php" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="weight" class="form-label">Berat (gram)</label>
-                        <input type="number" step="0.01" name="weight" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="price_per_gram" class="form-label">Harga per gram</label>
-                        <input type="number" step="0.01" name="price_per_gram" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="photo" class="form-label">Upload Foto Emas</label>
-                        <input type="file" name="photo" class="form-control" accept="image/*" required>
-                    </div>
+                <form method="POST" action="classes/sell_gold.php">
+                <div class="mb-3">
+                    <label for="weight" class="form-label">Berat (gram)</label>
+                    <input type="number" step="0.01" name="weight" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="price_per_gram" class="form-label">Harga per gram</label>
+                    <input type="number" step="0.01" name="price_per_gram" class="form-control" required>
+                </div>
                     <input type="hidden" name="type" value="sell">
                     <button type="submit" class="btn btn-primary">Kirim Penjualan</button>
                 </form>
