@@ -7,29 +7,34 @@ require_once __DIR__ . '/../classes/CustomerOrder.php';
 
 $customOrder = new CustomerOrder($pdo);
 
-// Tangani penghapusan
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $customOrder->delete($_GET['delete']);
-    header("Location: custom.php");
-    exit;
-}
-
-// Tangani pembaruan status
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['status'])) {
-    $customOrder->updateStatus($_POST['id'], $_POST['status']);
-}
-
-// tangani pembaruan harga
+// Tangani aksi status
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Update harga
-    if (isset($_POST['id'], $_POST['harga']) && isset($_POST['update_harga'])) {
+    if (isset($_POST['action'], $_POST['id']) && is_numeric($_POST['id'])) {
+        $id = $_POST['id'];
+
+        if ($_POST['action'] === 'konfirmasi_pembayaran') {
+            $customOrder->updateStatus($id, 'in_progress');
+        } elseif ($_POST['action'] === 'selesaikan') {
+            $customOrder->updateStatus($id, 'completed');
+        } elseif ($_POST['action'] === 'kirim') {
+            $customOrder->updateStatus($id, 'shipped', ['shipped_at' => date('Y-m-d H:i:s')]);
+        }
+    }
+
+    // Tangani pembaruan harga
+    if (isset($_POST['id'], $_POST['harga'], $_POST['update_harga'])) {
         $customOrder->updatePrice($_POST['id'], $_POST['harga']);
         header("Location: custom.php");
         exit;
     }
 }
 
-
+// Tangani penghapusan
+if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+    $customOrder->delete($_GET['delete']);
+    header("Location: custom.php");
+    exit;
+}
 
 // Tangani pencarian
 $keyword = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -39,9 +44,6 @@ $orders = $customOrder->getAll($keyword);
 <div class="content">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Daftar Customisasi Perhiasan</h2>
-        <div>
-            <!-- Tambahkan tombol jika butuh, misalnya tambah pesanan custom -->
-        </div>
     </div>
 
     <form class="input-group mb-4" method="get" action="custom.php">
@@ -59,7 +61,7 @@ $orders = $customOrder->getAll($keyword);
                         <th>Deskripsi</th>
                         <th>Gambar Referensi</th>
                         <th>Status</th>
-                        <th>Ubah Status</th>
+                        <th>Bukti Bayar</th>
                         <th>Harga</th>
                         <th>Tanggal</th>
                         <th>Aksi</th>
@@ -78,19 +80,13 @@ $orders = $customOrder->getAll($keyword);
                                     Tidak ada
                                 <?php endif; ?>
                             </td>
-                            <td class="status-<?= strtolower($row['status']) ?>">
-                                <?= ucfirst(str_replace('_', ' ', $row['status'])) ?>
-                            </td>
+                            <td><?= ucfirst(str_replace('_', ' ', $row['status'])) ?></td>
                             <td>
-                                <form method="POST">
-                                    <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                    <select name="status" onchange="this.form.submit()" class="form-select">
-                                        <option value="submitted" <?= $row['status'] == 'submitted' ? 'selected' : '' ?>>Submitted</option>
-                                        <option value="in_progress" <?= $row['status'] == 'in_progress' ? 'selected' : '' ?>>In Progress</option>
-                                        <option value="completed" <?= $row['status'] == 'completed' ? 'selected' : '' ?>>Completed</option>
-                                        <option value="cancelled" <?= $row['status'] == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                                    </select>
-                                </form>
+                                <?php if (!empty($row['payment_proof'])): ?>
+                                    <a href="../uploads/<?= htmlspecialchars($row['payment_proof']) ?>" target="_blank">Lihat Bukti</a>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <form method="POST" class="d-flex" style="gap: 4px;">
@@ -101,7 +97,24 @@ $orders = $customOrder->getAll($keyword);
                             </td>
                             <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
                             <td>
-                                <a href="custom.php?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus custom order ini?')">Hapus</a>
+                                <?php if ($row['status'] === 'waiting_payment_confirmation' && !empty($row['payment_proof'])): ?>
+                                    <form method="POST">
+                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                        <button type="submit" name="action" value="konfirmasi_pembayaran" class="btn btn-sm btn-primary">Konfirmasi</button>
+                                    </form>
+                                <?php elseif ($row['status'] === 'in_progress'): ?>
+                                    <form method="POST">
+                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                        <button type="submit" name="action" value="selesaikan" class="btn btn-sm btn-success">Selesai</button>
+                                    </form>
+                                <?php elseif ($row['status'] === 'completed'): ?>
+                                    <form method="POST">
+                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                        <button type="submit" name="action" value="kirim" class="btn btn-sm btn-info">Kirim</button>
+                                    </form>
+                                <?php else: ?>
+                                    <a href="custom.php?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus custom order ini?')">Hapus</a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

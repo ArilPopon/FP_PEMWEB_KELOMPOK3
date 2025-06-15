@@ -9,30 +9,47 @@ if (!isset($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+$message = '';
 
-// Proses konfirmasi diterima jika ada parameter id_konfirmasi
+// Konfirmasi katalog diterima
 if (isset($_GET['id_konfirmasi'])) {
-    $order_id = $_GET['id_konfirmasi'];
+    $id = $_GET['id_konfirmasi'];
+    $stmt = $pdo->prepare("SELECT * FROM transactions WHERE id = ? AND user_id = ? AND status = 'shipped'");
+    $stmt->execute([$id, $user['id']]);
+    $order = $stmt->fetch();
 
-    // Cek validitas transaksi
-    $stmtCheck = $pdo->prepare("SELECT * FROM transactions WHERE id = ? AND user_id = ? AND status = 'shipped'");
-    $stmtCheck->execute([$order_id, $user['id']]);
-    $trxCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-
-    if ($trxCheck) {
+    if ($order) {
         $now = date('Y-m-d H:i:s');
-        $update = $pdo->prepare("UPDATE transactions SET status = 'completed', completed_at = ? WHERE id = ?");
-        $update->execute([$now, $order_id]);
-
-        header("Location: pengiriman.php?konfirmasi=berhasil");
-        exit;
+        $stmt = $pdo->prepare("UPDATE transactions SET status = 'arrived', completed_at = ? WHERE id = ?");
+        $stmt->execute([$now, $id]);
+        $message = "Barang dari katalog telah dikonfirmasi diterima.";
     }
 }
 
-// Ambil transaksi user dengan status 'shipped'
-$stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? AND status IN ('shipped') ORDER BY shipped_at DESC");
-$stmt->execute([$user['id']]);
-$transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Konfirmasi custom order diterima
+if (isset($_GET['id_konfirmasi_custom'])) {
+    $custom_id = $_GET['id_konfirmasi_custom'];
+    $stmt = $pdo->prepare("SELECT * FROM custom_orders WHERE id = ? AND user_id = ? AND status = 'shipped'");
+    $stmt->execute([$custom_id, $user['id']]);
+    $custom = $stmt->fetch();
+
+    if ($custom) {
+        $now = date('Y-m-d H:i:s');
+        $stmt = $pdo->prepare("UPDATE custom_orders SET status = 'arrived', received_at = ? WHERE id = ?");
+        $stmt->execute([$now, $custom_id]);
+        $message = "Barang custom telah dikonfirmasi diterima.";
+    }
+}
+
+// Ambil data pengiriman dari katalog
+$stmt1 = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? AND status IN ('shipped', 'arrived') ORDER BY shipped_at DESC");
+$stmt1->execute([$user['id']]);
+$transactions = $stmt1->fetchAll(PDO::FETCH_ASSOC);
+
+// Ambil data pengiriman dari custom order
+$stmt2 = $pdo->prepare("SELECT * FROM custom_orders WHERE user_id = ? AND status = 'shipped' ORDER BY shipped_at DESC");
+$stmt2->execute([$user['id']]);
+$customOrders = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -70,7 +87,7 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .content {
-            padding: 30px;
+            padding: 0, 30px, 0, 30px;
         }
 
         .section-card {
@@ -100,17 +117,17 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Main Content -->
             <div class="col-md-9 content">
                 <div class="section-card">
-                    <h4>Sedang Dikirim / Selesai</h4>
+                    <h4>Pengiriman Produk Katalog</h4>
 
-                    <?php if (isset($_GET['konfirmasi']) && $_GET['konfirmasi'] === 'berhasil'): ?>
+                    <?php if (!empty($message)): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            Barang berhasil dikonfirmasi sebagai diterima. Terima kasih!
+                            <?= htmlspecialchars($message) ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     <?php endif; ?>
 
                     <?php if (count($transactions) > 0): ?>
-                        <div class="table-responsive">
+                        <div class="table-responsive mb-4">
                             <table class="table table-bordered table-striped align-middle">
                                 <thead class="table-dark">
                                     <tr>
@@ -126,11 +143,11 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php foreach ($transactions as $trx): ?>
                                         <?php
                                         $stmtItems = $pdo->prepare("
-                                    SELECT oi.*, p.name AS product_name
-                                    FROM order_items oi
-                                    JOIN products p ON oi.product_id = p.id
-                                    WHERE oi.order_id = ?
-                                ");
+                                            SELECT oi.*, p.name AS product_name
+                                            FROM order_items oi
+                                            JOIN products p ON oi.product_id = p.id
+                                            WHERE oi.order_id = ?
+                                        ");
                                         $stmtItems->execute([$trx['id']]);
                                         $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
@@ -164,16 +181,63 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </table>
                         </div>
                     <?php else: ?>
-                        <p class="text-muted">Belum ada pengiriman saat ini.</p>
+                        <p class="text-muted">Belum ada pengiriman dari katalog.</p>
                     <?php endif; ?>
+
+                    <h4 class="mt-5">Pengiriman Custom Order</h4>
+
+                    <?php if (count($customOrders) > 0): ?>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID Order</th>
+                                        <th>Deskripsi</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                        <th>Waktu</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($customOrders as $custom): ?>
+                                        <tr>
+                                            <td><?= $custom['id'] ?></td>
+                                            <td><?= nl2br(htmlspecialchars($custom['description'])) ?></td>
+                                            <td>Rp <?= number_format($custom['estimated_price'], 0, ',', '.') ?></td>
+                                            <td><?= ucfirst($custom['status']) ?></td>
+                                            <td>
+                                                <?php
+                                                $waktu = ($custom['status'] === 'shipped') ? $custom['shipped_at'] : $custom['received_at'];
+                                                echo $waktu ? date('d M Y H:i', strtotime($waktu)) : '-';
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($custom['status'] === 'shipped'): ?>
+                                                    <a href="pengiriman.php?id_konfirmasi_custom=<?= $custom['id'] ?>"
+                                                        class="btn btn-success btn-sm"
+                                                        onclick="return confirm('Apakah Anda yakin ingin mengonfirmasi barang custom telah diterima?')">
+                                                        Konfirmasi Diterima
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="text-muted">Selesai</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-muted">Belum ada pengiriman dari custom order.</p>
+                    <?php endif; ?>
+
                 </div>
             </div>
         </div>
     </div>
 
     <?php include 'template/footer.php'; ?>
-
-
 </body>
 
 </html>

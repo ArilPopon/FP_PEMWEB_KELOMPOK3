@@ -10,6 +10,7 @@ if (!isset($_SESSION['user'])) {
 
 $user = $_SESSION['user'];
 
+// Ambil data transaksi
 $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC");
 $stmt->execute([$user['id']]);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -17,6 +18,16 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Hitung total belanja hanya dari transaksi yang selesai
 $totalCompleted = array_filter($transactions, fn($t) => $t['status'] === 'completed');
 $totalBelanja = array_sum(array_column($totalCompleted, 'total_price'));
+
+// Ambil total booking (janji temu)
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE user_id = ?");
+$stmt->execute([$user['id']]);
+$totalBookings = $stmt->fetchColumn();
+
+// Ambil total permintaan custom
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM custom_orders WHERE user_id = ?");
+$stmt->execute([$user['id']]);
+$totalCustoms = $stmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -54,7 +65,7 @@ $totalBelanja = array_sum(array_column($totalCompleted, 'total_price'));
         }
 
         .content {
-            padding: 0 0 30px 0;
+            padding: 0, 30px, 0, 30px;
         }
 
         .section-card {
@@ -65,9 +76,13 @@ $totalBelanja = array_sum(array_column($totalCompleted, 'total_price'));
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
-        .table th,
-        .table td {
-            vertical-align: middle;
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: 1.5rem;
         }
     </style>
 </head>
@@ -95,64 +110,63 @@ $totalBelanja = array_sum(array_column($totalCompleted, 'total_price'));
                         </div>
                     </div>
 
-                    <div class="row mt-4">
-                        <div class="col-md-3">
+                    <!-- Grid Cards -->
+                    <div class="row mt-4 g-3">
+                        <div class="col-md-4">
                             <div class="card text-bg-primary text-white h-100">
-                                <div class="card-body d-flex flex-column justify-content-center text-center">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Total Transaksi</h5>
-                                    <p class="card-text fs-4 mb-0"><?= count($transactions) ?></p>
+                                    <p class="card-text"><?= count($transactions) ?></p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card text-bg-success text-white h-100">
-                                <div class="card-body d-flex flex-column justify-content-center text-center">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Berhasil (Completed)</h5>
-                                    <p class="card-text fs-4 mb-0"><?= count($totalCompleted) ?></p>
+                                    <p class="card-text"><?= count($totalCompleted) ?></p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card text-bg-danger text-white h-100">
-                                <div class="card-body d-flex flex-column justify-content-center text-center">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Dibatalkan</h5>
-                                    <p class="card-text fs-4 mb-0"><?= count(array_filter($transactions, fn($t) => $t['status'] === 'cancelled')) ?></p>
+                                    <p class="card-text"><?= count(array_filter($transactions, fn($t) => $t['status'] === 'cancelled')) ?></p>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-md-3">
+                        <div class="col-md-4">
+                            <div class="card text-bg-info text-white h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Janji Temu</h5>
+                                    <p class="card-text"><?= $totalBookings ?></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-bg-secondary text-white h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Permintaan Custom</h5>
+                                    <p class="card-text"><?= $totalCustoms ?></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="card text-bg-warning text-dark h-100">
-                                <div class="card-body d-flex flex-column justify-content-center text-center">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Total Belanja</h5>
-                                    <p class="card-text fs-4 mb-0">Rp <?= number_format($totalBelanja, 0, ',', '.') ?></p>
+                                    <p class="card-text">Rp <?= number_format($totalBelanja, 0, ',', '.') ?></p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    <!-- End Grid Cards -->
                 </div>
             </div>
         </div>
     </div>
 
-    <?php
-    function getStatusColor($status)
-    {
-        return match ($status) {
-            'pending' => 'secondary',
-            'paid' => 'info',
-            'shipped' => 'warning',
-            'completed' => 'success',
-            'cancelled' => 'danger',
-            default => 'dark',
-        };
-    }
-    ?>
-</body>
-
-</html>
-
-<?php include 'template/footer.php'; ?>
+    <?php include 'template/footer.php'; ?>

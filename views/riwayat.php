@@ -10,9 +10,15 @@ if (!isset($_SESSION['user'])) {
 
 $user = $_SESSION['user'];
 
+// Riwayat katalog
 $stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? AND status IN ('completed', 'cancelled') ORDER BY completed_at DESC");
 $stmt->execute([$user['id']]);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Riwayat custom order
+$stmtCustom = $pdo->prepare("SELECT * FROM custom_orders WHERE user_id = ? AND status = 'arrived' ORDER BY received_at DESC");
+$stmtCustom->execute([$user['id']]);
+$customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -50,7 +56,7 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .content {
-            padding: 30px;
+            padding: 0, 30px, 0, 30px;
         }
 
         .section-card {
@@ -64,6 +70,11 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .table td,
         .table th {
             vertical-align: middle;
+        }
+
+        img.thumbnail {
+            max-width: 100px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -79,7 +90,7 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Main Content -->
             <div class="col-md-9 content">
                 <div class="section-card">
-                    <h4>Riwayat Transaksi</h4>
+                    <h4>Riwayat Transaksi Katalog</h4>
 
                     <?php if (count($transactions) > 0): ?>
                         <div class="table-responsive">
@@ -97,13 +108,12 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($transactions as $trx): ?>
                                         <?php
-                                        // Ambil produk untuk transaksi ini
                                         $stmtItems = $pdo->prepare("
-                                        SELECT oi.*, p.name AS product_name
-                                        FROM order_items oi
-                                        JOIN products p ON oi.product_id = p.id
-                                        WHERE oi.order_id = ?
-                                    ");
+                                            SELECT oi.*, p.name AS product_name
+                                            FROM order_items oi
+                                            JOIN products p ON oi.product_id = p.id
+                                            WHERE oi.order_id = ?
+                                        ");
                                         $stmtItems->execute([$trx['id']]);
                                         $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
@@ -117,7 +127,7 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <td><?= $produk ?></td>
                                             <td>Rp <?= number_format($trx['total_price'], 0, ',', '.') ?></td>
                                             <td><?= ucfirst($trx['status']) ?></td>
-                                            <td><?= date('d M Y H:i', strtotime($trx['created_at'])) ?></td>
+                                            <td><?= date('d M Y H:i', strtotime($trx['completed_at'])) ?></td>
                                             <td>
                                                 <a href="detail_transaksi.php?id=<?= $trx['id'] ?>" class="btn btn-sm btn-primary">
                                                     Lihat Detail
@@ -129,9 +139,42 @@ $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </table>
                         </div>
                     <?php else: ?>
-                        <p class="text-muted">Belum ada transaksi yang tercatat.</p>
+                        <p class="text-muted">Belum ada transaksi katalog.</p>
                     <?php endif; ?>
                 </div>
+
+                <!-- Riwayat Custom Order -->
+                <div class="section-card">
+                    <h4>Riwayat Custom Order</h4>
+
+                    <?php if (count($customOrders) > 0): ?>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Deskripsi</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                        <th>Tanggal Diterima</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($customOrders as $order): ?>
+                                        <tr>
+                                            <td><?= nl2br(htmlspecialchars($order['description'])) ?></td>
+                                            <td>Rp <?= number_format($order['estimated_price'], 0, ',', '.') ?></td>
+                                            <td><span class="badge bg-success"><?= ucfirst($order['status']) ?></span></td>
+                                            <td><?= date('d M Y H:i', strtotime($order['received_at'])) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-muted">Belum ada custom order yang selesai.</p>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
     </div>

@@ -37,13 +37,21 @@ class CustomerOrder
 
     public function updateStatus($id, $status)
     {
-        $sql = "UPDATE custom_orders SET status = :status WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            ':status' => $status,
-            ':id' => $id
-        ]);
+        if ($status === 'completed') {
+            $stmt = $this->pdo->prepare("UPDATE custom_orders SET status = ?, completed_at = NOW() WHERE id = ?");
+            return $stmt->execute([$status, $id]);
+        } elseif ($status === 'shipped') {
+            $stmt = $this->pdo->prepare("UPDATE custom_orders SET status = ?, shipped_at = NOW() WHERE id = ?");
+            return $stmt->execute([$status, $id]);
+        } elseif ($status === 'arrived') {
+            $stmt = $this->pdo->prepare("UPDATE custom_orders SET status = ?, arrived_at = NOW() WHERE id = ?");
+            return $stmt->execute([$status, $id]);
+        } else {
+            $stmt = $this->pdo->prepare("UPDATE custom_orders SET status = ? WHERE id = ?");
+            return $stmt->execute([$status, $id]);
+        }
     }
+
 
     public function delete($id)
     {
