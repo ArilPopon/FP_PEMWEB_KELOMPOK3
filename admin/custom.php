@@ -7,21 +7,8 @@ require_once __DIR__ . '/../classes/CustomerOrder.php';
 
 $customOrder = new CustomerOrder($pdo);
 
-// Tangani aksi status
+// Tangani pembaruan harga
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'], $_POST['id']) && is_numeric($_POST['id'])) {
-        $id = $_POST['id'];
-
-        if ($_POST['action'] === 'konfirmasi_pembayaran') {
-            $customOrder->updateStatus($id, 'in_progress');
-        } elseif ($_POST['action'] === 'selesaikan') {
-            $customOrder->updateStatus($id, 'completed');
-        } elseif ($_POST['action'] === 'kirim') {
-            $customOrder->updateStatus($id, 'shipped', ['shipped_at' => date('Y-m-d H:i:s')]);
-        }
-    }
-
-    // Tangani pembaruan harga
     if (isset($_POST['id'], $_POST['harga'], $_POST['update_harga'])) {
         $customOrder->updatePrice($_POST['id'], $_POST['harga']);
         header("Location: custom.php");
@@ -29,16 +16,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Tangani penghapusan
+// update status
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id'])) {
+    $id = $_POST['id'];
+    $action = $_POST['action'];
+
+    if ($action === 'selesaikan') {
+        $now = date('Y-m-d H:i:s');
+        $stmt = $pdo->prepare("UPDATE custom_orders SET status = 'completed', completed_at = ? WHERE id = ?");
+        $stmt->execute([$now, $id]);
+    }
+    header("Location: custom.php");
+    exit;
+}
+
+
+// Tangani hapus
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $customOrder->delete($_GET['delete']);
     header("Location: custom.php");
     exit;
 }
 
-// Tangani pencarian
+// Pagination
 $keyword = isset($_GET['search']) ? trim($_GET['search']) : '';
-$orders = $customOrder->getAll($keyword);
+$limit = 5;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int) $_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+$total_records = $customOrder->countAll($keyword);
+$total_pages = ceil($total_records / $limit);
+
+
+$orders = $customOrder->getAll($keyword, $limit, $offset);
+
+
+// Ambil data sesuai halaman
+$orders = $customOrder->getAll($keyword, $limit, $offset);
 ?>
 
 <div class="content">
@@ -61,9 +75,8 @@ $orders = $customOrder->getAll($keyword);
                         <th>Deskripsi</th>
                         <th>Gambar Referensi</th>
                         <th>Status</th>
-                        <th>Bukti Bayar</th>
                         <th>Harga</th>
-                        <th>Tanggal</th>
+                        <th>Waktu</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -81,13 +94,7 @@ $orders = $customOrder->getAll($keyword);
                                 <?php endif; ?>
                             </td>
                             <td><?= ucfirst(str_replace('_', ' ', $row['status'])) ?></td>
-                            <td>
-                                <?php if (!empty($row['payment_proof'])): ?>
-                                    <a href="../uploads/<?= htmlspecialchars($row['payment_proof']) ?>" target="_blank">Lihat Bukti</a>
-                                <?php else: ?>
-                                    <span class="text-muted">-</span>
-                                <?php endif; ?>
-                            </td>
+
                             <td>
                                 <form method="POST" class="d-flex" style="gap: 4px;">
                                     <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -95,22 +102,12 @@ $orders = $customOrder->getAll($keyword);
                                     <button type="submit" name="update_harga" class="btn btn-sm btn-success">Simpan</button>
                                 </form>
                             </td>
-                            <td><?= date('d-m-Y', strtotime($row['created_at'])) ?></td>
+                            <td><?= $row['created_at'] ?></td>
                             <td>
-                                <?php if ($row['status'] === 'waiting_payment_confirmation' && !empty($row['payment_proof'])): ?>
-                                    <form method="POST">
-                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                        <button type="submit" name="action" value="konfirmasi_pembayaran" class="btn btn-sm btn-primary">Konfirmasi</button>
-                                    </form>
-                                <?php elseif ($row['status'] === 'in_progress'): ?>
+                                <?php if ($row['status'] === 'in_progress'): ?>
                                     <form method="POST">
                                         <input type="hidden" name="id" value="<?= $row['id'] ?>">
                                         <button type="submit" name="action" value="selesaikan" class="btn btn-sm btn-success">Selesai</button>
-                                    </form>
-                                <?php elseif ($row['status'] === 'completed'): ?>
-                                    <form method="POST">
-                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                        <button type="submit" name="action" value="kirim" class="btn btn-sm btn-info">Kirim</button>
                                     </form>
                                 <?php else: ?>
                                     <a href="custom.php?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus custom order ini?')">Hapus</a>
@@ -121,6 +118,31 @@ $orders = $customOrder->getAll($keyword);
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <?php if ($page > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?search=<?= urlencode($keyword) ?>&page=<?= $page - 1 ?>">Sebelumnya</a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                            <a class="page-link" href="?search=<?= urlencode($keyword) ?>&page=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $total_pages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?search=<?= urlencode($keyword) ?>&page=<?= $page + 1 ?>">Berikutnya</a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
     <?php else: ?>
         <p class="text-muted">Tidak ada data ditemukan.</p>
     <?php endif; ?>

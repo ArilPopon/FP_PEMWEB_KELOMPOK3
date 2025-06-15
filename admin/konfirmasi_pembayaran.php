@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['type'], $_POST['order
         if ($action === 'accept') {
             $stmt = $pdo->prepare("UPDATE custom_orders SET status = 'in_progress' WHERE id = ?");
         } else {
-            $stmt = $pdo->prepare("UPDATE custom_orders SET status = 'rejected' WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE custom_orders SET status = 'cancelled' WHERE id = ?");
         }
         $stmt->execute([$orderId]);
     }
@@ -35,7 +35,7 @@ $stmt1->execute();
 $transactions = $stmt1->fetchAll(PDO::FETCH_ASSOC);
 
 // Ambil custom order yang punya bukti pembayaran
-$stmt2 = $pdo->prepare("SELECT * FROM custom_orders WHERE payment_proof IS NOT NULL ORDER BY created_at DESC");
+$stmt2 = $pdo->prepare("SELECT * FROM custom_orders WHERE payment_proof IS NOT NULL AND status = 'submitted' ORDER BY created_at DESC");
 $stmt2->execute();
 $customOrders = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 ?>

@@ -10,7 +10,9 @@
     <style>
         body {
             min-height: 100vh;
+            margin: 0;
             display: flex;
+            overflow: hidden;
         }
 
         .sidebar {
@@ -18,6 +20,10 @@
             background-color: #343a40;
             color: white;
             flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
         }
 
         .sidebar a {
@@ -36,8 +42,12 @@
             flex-grow: 1;
             padding: 20px;
             background-color: #f8f9fa;
+            overflow-y: auto;
+            height: 100vh;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>

@@ -76,7 +76,7 @@ function getStatusLabel($status)
 
 <body>
     <div class="section-card">
-        <h4>🧾 Detail Transaksi #<?= $transaction['id'] ?></h4>
+        <h4>Detail Transaksi #<?= $transaction['id'] ?></h4>
         <hr>
 
         <p><strong>Status:</strong> <?= getStatusLabel($transaction['status']) ?></p>
@@ -93,7 +93,7 @@ function getStatusLabel($status)
             <p><strong>Diselesaikan:</strong> <?= date('d M Y H:i', strtotime($transaction['completed_at'])) ?></p>
         <?php endif; ?>
 
-        <h5 class="mt-4">🛍️ Produk Dipesan</h5>
+        <h5 class="mt-4">Produk Dipesan</h5>
         <div class="table-responsive">
             <table class="table table-bordered table-sm mt-2">
                 <thead class="table-light">

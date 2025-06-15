@@ -9,16 +9,76 @@ if (!isset($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+$userId = $user['id'];
 
-// Riwayat katalog
-$stmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? AND status IN ('completed', 'cancelled') ORDER BY completed_at DESC");
-$stmt->execute([$user['id']]);
+$limit = 5;
+
+// ===== PAGINATION & SEARCH KATALOG =====
+$page_katalog = isset($_GET['page_katalog']) ? (int)$_GET['page_katalog'] : 1;
+$search_katalog = isset($_GET['search_katalog']) ? trim($_GET['search_katalog']) : '';
+$offset_katalog = ($page_katalog - 1) * $limit;
+
+$params_katalog = [$userId];
+$search_clause_katalog = '';
+
+if (!empty($search_katalog)) {
+    $search_clause_katalog = "AND t.id IN (
+        SELECT oi.order_id 
+        FROM order_items oi 
+        JOIN products p ON oi.product_id = p.id 
+        WHERE p.name LIKE ?
+    )";
+    $params_katalog[] = "%$search_katalog%";
+}
+
+$query_katalog = "SELECT * FROM transactions t 
+                  WHERE user_id = ? AND status IN ('completed', 'cancelled') 
+                  $search_clause_katalog 
+                  ORDER BY completed_at DESC 
+                  LIMIT $limit OFFSET $offset_katalog";
+$stmt = $pdo->prepare($query_katalog);
+$stmt->execute($params_katalog);
 $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Riwayat custom order
-$stmtCustom = $pdo->prepare("SELECT * FROM custom_orders WHERE user_id = ? AND status = 'arrived' ORDER BY received_at DESC");
-$stmtCustom->execute([$user['id']]);
-$customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
+// Hitung total data katalog
+$count_query_katalog = "SELECT COUNT(*) FROM transactions t 
+                        WHERE user_id = ? AND status IN ('completed', 'cancelled') 
+                        $search_clause_katalog";
+$stmt = $pdo->prepare($count_query_katalog);
+$stmt->execute($params_katalog);
+$total_katalog = $stmt->fetchColumn();
+$total_pages_katalog = ceil($total_katalog / $limit);
+
+// ===== PAGINATION & SEARCH CUSTOM ORDER =====
+$page_custom = isset($_GET['page_custom']) ? (int)$_GET['page_custom'] : 1;
+$search_custom = isset($_GET['search_custom']) ? trim($_GET['search_custom']) : '';
+$offset_custom = ($page_custom - 1) * $limit;
+
+$params_custom = [$userId];
+$search_clause_custom = '';
+
+if (!empty($search_custom)) {
+    $search_clause_custom = "AND description LIKE ?";
+    $params_custom[] = "%$search_custom%";
+}
+
+$query_custom = "SELECT * FROM custom_orders 
+                 WHERE user_id = ? AND status = 'arrived' 
+                 $search_clause_custom 
+                 ORDER BY received_at DESC 
+                 LIMIT $limit OFFSET $offset_custom";
+$stmt = $pdo->prepare($query_custom);
+$stmt->execute($params_custom);
+$customOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Hitung total data custom order
+$count_query_custom = "SELECT COUNT(*) FROM custom_orders 
+                       WHERE user_id = ? AND status = 'arrived' 
+                       $search_clause_custom";
+$stmt = $pdo->prepare($count_query_custom);
+$stmt->execute($params_custom);
+$total_custom = $stmt->fetchColumn();
+$total_pages_custom = ceil($total_custom / $limit);
 ?>
 
 <!DOCTYPE html>
@@ -36,9 +96,12 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
 
         .sidebar {
             height: 100vh;
+            overflow-y: auto;
             background-color: #343a40;
             color: #fff;
             padding-top: 30px;
+            position: sticky;
+            top: 0;
         }
 
         .sidebar a {
@@ -56,14 +119,13 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .content {
-            padding: 0, 30px, 0, 30px;
+            padding: 0, 0, 0, 30px;
         }
 
         .section-card {
             background: #fff;
             border-radius: 10px;
             padding: 25px;
-            margin-bottom: 30px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
@@ -89,8 +151,17 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Main Content -->
             <div class="col-md-9 content">
-                <div class="section-card">
+                <div class="section-card mb-3">
                     <h4>Riwayat Transaksi Katalog</h4>
+
+                    <form class="row mb-3" method="GET">
+                        <div class="col-8">
+                            <input type="text" class="form-control" name="search_katalog" placeholder="Cari berdasarkan produk" value="<?= htmlspecialchars($search_katalog) ?>">
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary">Cari</button>
+                        </div>
+                    </form>
 
                     <?php if (count($transactions) > 0): ?>
                         <div class="table-responsive">
@@ -109,11 +180,11 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
                                     <?php foreach ($transactions as $trx): ?>
                                         <?php
                                         $stmtItems = $pdo->prepare("
-                                            SELECT oi.*, p.name AS product_name
-                                            FROM order_items oi
-                                            JOIN products p ON oi.product_id = p.id
-                                            WHERE oi.order_id = ?
-                                        ");
+                                    SELECT oi.*, p.name AS product_name
+                                    FROM order_items oi
+                                    JOIN products p ON oi.product_id = p.id
+                                    WHERE oi.order_id = ?
+                                ");
                                         $stmtItems->execute([$trx['id']]);
                                         $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
@@ -128,16 +199,21 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
                                             <td>Rp <?= number_format($trx['total_price'], 0, ',', '.') ?></td>
                                             <td><?= ucfirst($trx['status']) ?></td>
                                             <td><?= date('d M Y H:i', strtotime($trx['completed_at'])) ?></td>
-                                            <td>
-                                                <a href="detail_transaksi.php?id=<?= $trx['id'] ?>" class="btn btn-sm btn-primary">
-                                                    Lihat Detail
-                                                </a>
-                                            </td>
+                                            <td><a href="detail_transaksi.php?id=<?= $trx['id'] ?>" class="btn btn-sm btn-primary">Lihat Detail</a></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                <?php for ($i = 1; $i <= $total_pages_katalog; $i++): ?>
+                                    <li class="page-item <?= $i == $page_katalog ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page_katalog=<?= $i ?>&search_katalog=<?= urlencode($search_katalog) ?>"> <?= $i ?> </a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
                     <?php else: ?>
                         <p class="text-muted">Belum ada transaksi katalog.</p>
                     <?php endif; ?>
@@ -146,6 +222,15 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Riwayat Custom Order -->
                 <div class="section-card">
                     <h4>Riwayat Custom Order</h4>
+
+                    <form class="row mb-3 " method="GET">
+                        <div class="col-8">
+                            <input type="text" class="form-control" name="search_custom" placeholder="Cari berdasarkan deskripsi" value="<?= htmlspecialchars($search_custom) ?>">
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary">Cari</button>
+                        </div>
+                    </form>
 
                     <?php if (count($customOrders) > 0): ?>
                         <div class="table-responsive">
@@ -170,11 +255,19 @@ $customOrders = $stmtCustom->fetchAll(PDO::FETCH_ASSOC);
                                 </tbody>
                             </table>
                         </div>
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                <?php for ($i = 1; $i <= $total_pages_custom; $i++): ?>
+                                    <li class="page-item <?= $i == $page_custom ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page_custom=<?= $i ?>&search_custom=<?= urlencode($search_custom) ?>"> <?= $i ?> </a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
                     <?php else: ?>
                         <p class="text-muted">Belum ada custom order yang selesai.</p>
                     <?php endif; ?>
                 </div>
-
             </div>
         </div>
     </div>

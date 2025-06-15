@@ -76,7 +76,7 @@ $customOrdersShipped = $stmtCustomShipped->fetchAll(PDO::FETCH_ASSOC);
                         <th>ID</th>
                         <th>User</th>
                         <th>Total Harga</th>
-                        <th>Pembayaran</th>
+                        <th>Waktu Pembayaran</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -113,6 +113,7 @@ $customOrdersShipped = $stmtCustomShipped->fetchAll(PDO::FETCH_ASSOC);
                         <th>User</th>
                         <th>Harga</th>
                         <th>Status</th>
+                        <th>Waktu Selesai</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -123,6 +124,9 @@ $customOrdersShipped = $stmtCustomShipped->fetchAll(PDO::FETCH_ASSOC);
                             <td><?= htmlspecialchars($co['name']) ?></td>
                             <td>Rp <?= number_format($co['estimated_price'], 0, ',', '.') ?></td>
                             <td><span class="badge bg-success"><?= ucfirst($co['status']) ?></span></td>
+                            <td>
+                                <?= $co['completed_at'] ? date('d M Y H:i', strtotime($co['completed_at'])) : '-' ?>
+                            </td>
                             <td>
                                 <form method="POST">
                                     <input type="hidden" name="custom_order_id" value="<?= $co['id'] ?>">

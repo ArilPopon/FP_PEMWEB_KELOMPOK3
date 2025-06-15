@@ -19,7 +19,7 @@ class CustomerOrder
         ]);
     }
 
-    public function getAll($keyword = '')
+    public function getAll($keyword = '', $limit = 5, $offset = 0)
     {
         $sql = "SELECT * FROM custom_orders";
         $params = [];
@@ -29,11 +29,33 @@ class CustomerOrder
             $params[':keyword'] = '%' . $keyword . '%';
         }
 
-        $sql .= " ORDER BY created_at DESC";
+        $sql .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+
+        if (!empty($keyword)) {
+            $stmt->bindValue(':keyword', $params[':keyword'], PDO::PARAM_STR);
+        }
+
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function countAll($keyword = '')
+    {
+        if (!empty($keyword)) {
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM custom_orders WHERE description LIKE :keyword OR status LIKE :keyword");
+            $stmt->execute([':keyword' => '%' . $keyword . '%']);
+        } else {
+            $stmt = $this->pdo->query("SELECT COUNT(*) FROM custom_orders");
+        }
+
+        return (int) $stmt->fetchColumn(); // ambil angka, bukan array
+    }
+
+
 
     public function updateStatus($id, $status)
     {

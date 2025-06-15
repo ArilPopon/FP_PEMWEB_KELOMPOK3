@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_proof'])) {
 
     if ($order && !empty($order['estimated_price']) && empty($order['payment_proof'])) {
         if (move_uploaded_file($_FILES['payment_proof']['tmp_name'], $targetFile)) {
-            $stmt = $pdo->prepare("UPDATE custom_orders SET payment_proof = ?, status = 'waiting_payment_confirmation' WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE custom_orders SET payment_proof = ?, status = 'submitted' WHERE id = ?");
             $stmt->execute([$fileName, $orderId]);
             $message = "Bukti pembayaran berhasil diunggah.";
         } else {
@@ -44,9 +44,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_received'])) 
     $message = "Terima kasih! Barang telah diterima.";
 }
 
-// Ambil semua custom orders user
-$stmt = $pdo->prepare("SELECT * FROM custom_orders WHERE user_id = ? ORDER BY created_at DESC");
-$stmt->execute([$user['id']]);
+// Pencarian dan pagination
+$search = $_GET['search'] ?? '';
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$limit = 5;
+$offset = ($page - 1) * $limit;
+
+$params = [$user['id']];
+$whereClause = "user_id = ?";
+if (!empty($search)) {
+    $whereClause .= " AND description LIKE ?";
+    $params[] = '%' . $search . '%';
+}
+
+// Ambil total data
+$stmtCount = $pdo->prepare("SELECT COUNT(*) FROM custom_orders WHERE $whereClause");
+$stmtCount->execute($params);
+$totalOrders = $stmtCount->fetchColumn();
+$totalPages = ceil($totalOrders / $limit);
+
+// Ambil data per halaman
+$stmt = $pdo->prepare("SELECT * FROM custom_orders WHERE $whereClause ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
+$stmt->execute($params);
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -65,9 +84,12 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .sidebar {
             height: 100vh;
+            overflow-y: auto;
             background-color: #343a40;
             color: #fff;
             padding-top: 30px;
+            position: sticky;
+            top: 0;
         }
 
         .sidebar a {
@@ -85,7 +107,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .content {
-            padding: 0, 30px, 0, 30px;
+            padding: 0, 0, 0, 30px;
         }
 
         .section-card {
@@ -112,6 +134,14 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="col-md-9 content">
                 <div class="section-card">
                     <h4>Custom Order</h4>
+
+                    <form method="get" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control me-2" placeholder="Cari deskripsi..."
+                                value="<?= htmlspecialchars($search) ?>">
+                            <button type="submit" class="btn btn-primary">Cari</button>
+                        </div>
+                    </form>
 
                     <?php if (!empty($message)): ?>
                         <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
@@ -153,18 +183,17 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <td>
                                                 <?php if (!empty($order['estimated_price']) && empty($order['payment_proof'])): ?>
                                                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalBayar<?= $order['id'] ?>">Bayar</button>
-
                                                 <?php elseif ($order['status'] === 'shipped'): ?>
-                                                    <span class="badge bg-info">Sedang Dikirim</span>
-
+                                                    <form method="post">
+                                                        <input type="hidden" name="confirm_received" value="<?= $order['id'] ?>">
+                                                        <button class="btn btn-sm btn-success">Konfirmasi Diterima</button>
+                                                    </form>
                                                 <?php elseif (!empty($order['payment_proof'])): ?>
                                                     <span class="text-success">Sudah dibayar</span>
-
                                                 <?php else: ?>
                                                     <span class="text-muted">Menunggu estimasi harga</span>
                                                 <?php endif; ?>
                                             </td>
-
                                         </tr>
 
                                         <!-- Modal bayar -->
@@ -179,7 +208,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                         <div class="modal-body">
                                                             <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                                             <div class="mb-3">
-                                                                <label class="form-label">Upload File (JPG, PNG, PDF)</label>
+                                                                <label class="form-label">Kirim ke BRI<br>Nomor: 320280408301830<br>Atas Nama: TOKO MAS ERISON SIREGAR</label>
                                                                 <input type="file" name="payment_proof" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
                                                             </div>
                                                         </div>
@@ -195,6 +224,17 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Pagination -->
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                    <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page=<?= $i ?>&search=<?= urlencode($search) ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                            </ul>
+                        </nav>
                     <?php endif; ?>
                 </div>
             </div>

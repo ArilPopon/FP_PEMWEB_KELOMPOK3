@@ -4,8 +4,10 @@ include 'includes/header.php';
 include 'includes/sidebar.php';
 require_once './../config/database.php';
 
-class Users {
-    public function tampilkan_tabel($pdo, $role = null) {
+class Users
+{
+    public function tampilkan_tabel($pdo, $role = null)
+    {
         $query = "SELECT * FROM users";
         $params = [];
 
@@ -20,12 +22,13 @@ class Users {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function pencarian($pdo, $keyword) {
+    public function pencarian($pdo, $keyword)
+    {
         $query = "SELECT * FROM users";
         $params = [];
 
         if (!empty($keyword)) {
-            $query .= " WHERE name LIKE :keyword OR email LIKE :keyword";
+            $query .= " WHERE name LIKE :keyword OR email LIKE :keyword OR phone LIKE :keyword";
             $params[':keyword'] = '%' . $keyword . '%';
         }
 
@@ -43,10 +46,10 @@ $usersObj = new Users();
 if (!empty($keyword)) {
     // If a search keyword is present, display filtered results for both roles
     $allUsers = $usersObj->pencarian($pdo, $keyword);
-    $adminData = array_filter($allUsers, function($user) {
+    $adminData = array_filter($allUsers, function ($user) {
         return $user['role'] === 'admin';
     });
-    $customerData = array_filter($allUsers, function($user) {
+    $customerData = array_filter($allUsers, function ($user) {
         return $user['role'] === 'customer';
     });
 } else {
@@ -58,14 +61,15 @@ if (!empty($keyword)) {
 ?>
 
 <div class="content">
-    <h2 style="text-align: center;">MANAJEMEN PENGGUNA</h2><hr/>
+    <h2 style="text-align: center;">MANAJEMEN PENGGUNA</h2>
+    <hr />
     <div>
         <form action="users.php" method="get" class="input-group mb-4">
-            <input type="text" name="search" class="form-control" placeholder="Cari data user" value="<?= htmlspecialchars($keyword); ?>">
+            <input type="text" name="search" class="form-control" placeholder="Cari nama, email, atau telepon" value="<?= htmlspecialchars($keyword); ?>">
             <button class="btn btn-outline-secondary" type="submit">Cari</button>
         </form>
     </div>
-    <h3>Data Admin</h3>
+    <!-- <h3>Data Admin</h3>
     <?php if (count($adminData) > 0): ?>
     <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
@@ -83,7 +87,7 @@ if (!empty($keyword)) {
                         <td><?= htmlspecialchars($admin['id']); ?></td>
                         <td><?= htmlspecialchars($admin['name']); ?></td>
                         <td><?= htmlspecialchars($admin['email']); ?></td>
-                        <td><?= htmlspecialchars($admin['created_at']);?></td>
+                        <td><?= htmlspecialchars($admin['created_at']); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -91,33 +95,33 @@ if (!empty($keyword)) {
     </div>
     <?php else: ?>
         <p class="text-muted">Data kosong / Data tidak ditemukan!</p>
-    <?php endif; ?>
+    <?php endif; ?> -->
     <h3>Data Pengguna</h3>
-    <?php if(count($customerData) > 0): ?>
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped talign-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>id</th>
-                    <th>Name</th>
-                    <th>E-Mail</th>
-                    <th>Phone</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach($customerData as $customer): ?>
+    <?php if (count($customerData) > 0): ?>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped talign-middle">
+                <thead class="table-dark">
                     <tr>
-                        <td><?= htmlspecialchars($customer['id']); ?></td>
-                        <td><?= htmlspecialchars($customer['name']); ?></td>
-                        <td><?= htmlspecialchars($customer['email']); ?></td>
-                        <td><?= htmlspecialchars($customer['phone']); ?></td>
-                        <td><?= htmlspecialchars($customer['created_at']); ?></td>
+                        <th>id</th>
+                        <th>Name</th>
+                        <th>E-Mail</th>
+                        <th>Phone</th>
+                        <th>Gabung</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    <?php foreach ($customerData as $customer): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($customer['id']); ?></td>
+                            <td><?= htmlspecialchars($customer['name']); ?></td>
+                            <td><?= htmlspecialchars($customer['email']); ?></td>
+                            <td><?= htmlspecialchars($customer['phone']); ?></td>
+                            <td><?= htmlspecialchars($customer['created_at']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     <?php else: ?>
         <p class="text-muted">Data kosong / Data tidak ditemukan!</p>
     <?php endif; ?>
