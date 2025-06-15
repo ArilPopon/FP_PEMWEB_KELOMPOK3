@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 12 Jun 2025 pada 19.38
+-- Waktu pembuatan: 15 Jun 2025 pada 13.30
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -92,17 +92,26 @@ CREATE TABLE `custom_orders` (
   `user_id` int(11) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `reference_image` varchar(255) DEFAULT NULL,
-  `status` enum('submitted','in_progress','completed','cancelled') DEFAULT 'submitted',
+  `status` enum('submitted','in_progress','completed','shipped','arrived','cancelled') DEFAULT 'submitted',
   `estimated_price` decimal(15,2) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `payment_proof` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `payment_status` enum('paid','cancelled') DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
+  `shipped_at` datetime DEFAULT NULL,
+  `received_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `custom_orders`
 --
 
-INSERT INTO `custom_orders` (`id`, `user_id`, `description`, `reference_image`, `status`, `estimated_price`, `created_at`) VALUES
-(3, 1, 'Jenis: 6\nBahan: emas_kuning\nKadar: \nUkuran: 2,5 cm\nUkiran: ', 'bros bunga.jpeg', 'in_progress', 100000.00, '2025-06-08 04:57:23');
+INSERT INTO `custom_orders` (`id`, `user_id`, `description`, `reference_image`, `status`, `estimated_price`, `payment_proof`, `created_at`, `payment_status`, `completed_at`, `shipped_at`, `received_at`) VALUES
+(4, 1, 'Jenis: 6\nBahan: emas_kuning\nKadar: \nUkuran: 1\nUkiran: Lope Lope', 'bros bunga.jpeg', 'completed', 200000.00, '1749912528_photo_2025-06-02_17-37-06.jpg', '2025-06-14 14:47:44', NULL, NULL, NULL, NULL),
+(6, 1, 'Jenis: 6\nBahan: emas_kuning\nKadar: \nUkuran: 1\nUkiran: wkwkwk', 'bros bunga.jpeg', 'completed', 250000.00, '1749914521_photo_2025-06-02_17-37-06.jpg', '2025-06-14 15:21:19', NULL, NULL, NULL, NULL),
+(7, 1, 'Jenis: 6\nBahan: emas_kuning\nKadar: \nUkuran: 1\nUkiran: lopyu', 'bros bunga.jpeg', 'shipped', 150000.00, '1749918029_photo_2025-06-02_17-37-06.jpg', '2025-06-14 16:19:44', NULL, NULL, '2025-06-14 23:23:18', NULL),
+(8, 1, 'Jenis: 6\nBahan: emas_kuning\nKadar: \nUkuran: 2\nUkiran: yyy', 'bros bunga.jpeg', 'shipped', 210000.00, '1749918482_photo_2025-06-02_17-37-06.jpg', '2025-06-14 16:27:17', NULL, NULL, '2025-06-14 23:32:24', NULL),
+(9, 1, 'Jenis: 6\nBahan: emas_kuning\nKadar: \nUkuran: 1\nUkiran: kiwkiwkiw', 'bros bunga.jpeg', 'arrived', 120000.00, '1749918690_photo_2025-06-02_17-37-06.jpg', '2025-06-14 16:30:46', NULL, '2025-06-14 23:32:01', '2025-06-14 23:32:49', '2025-06-15 00:20:12');
 
 -- --------------------------------------------------------
 
@@ -254,8 +263,8 @@ INSERT INTO `transactions` (`id`, `user_id`, `total_price`, `status`, `created_a
 (7, 1, 50000000.00, 'paid', '2025-06-10 16:08:00', '1749571680_photo_2025-06-02_17-37-06.jpg', NULL, NULL, NULL),
 (8, 1, 300000.00, 'cancelled', '2025-06-10 16:15:41', '1749572141_photo_2025-06-02_17-37-06.jpg', '2025-06-10 23:15:52', NULL, NULL),
 (9, 1, 600000.00, 'completed', '2025-06-10 16:23:55', '1749572635_photo_2025-06-02_17-37-06.jpg', '2025-06-10 23:23:59', '2025-06-10 23:24:23', '2025-06-12 15:27:46'),
-(10, 1, 1000000.00, 'shipped', '2025-06-11 04:16:56', '1749615416_photo_2025-06-02_17-37-06.jpg', '2025-06-11 11:17:18', '2025-06-11 11:18:08', NULL),
-(11, 1, 10000000.00, 'pending', '2025-06-11 04:17:38', '1749615458_photo_2025-06-02_17-37-06.jpg', NULL, NULL, NULL);
+(10, 1, 1000000.00, 'completed', '2025-06-11 04:16:56', '1749615416_photo_2025-06-02_17-37-06.jpg', '2025-06-11 11:17:18', '2025-06-11 11:18:08', '2025-06-14 22:35:41'),
+(11, 1, 10000000.00, '', '2025-06-11 04:17:38', '1749615458_photo_2025-06-02_17-37-06.jpg', '2025-06-14 22:35:02', '2025-06-14 22:35:28', '2025-06-15 00:20:22');
 
 -- --------------------------------------------------------
 
@@ -409,7 +418,7 @@ ALTER TABLE `appointments`
 -- AUTO_INCREMENT untuk tabel `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT untuk tabel `categories`
@@ -421,7 +430,7 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT untuk tabel `custom_orders`
 --
 ALTER TABLE `custom_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `gold`
@@ -520,6 +529,7 @@ ALTER TABLE `transactions_old`
   ADD CONSTRAINT `transactions_old_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `transactions_old_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
